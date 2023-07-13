@@ -109,6 +109,14 @@ module.exports = {
     minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
   },
   /**
+   * 开发推荐使用
+   * none
+   * source-map
+   * hidden-source-map
+   * nosources-source-map
+   */
+  devtool: "nosources-source-map",
+  /**
    * 模式
    * 生成模式下默认开启html和js的压缩
    */

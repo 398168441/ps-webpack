@@ -91,6 +91,11 @@ module.exports = {
       progress: true,
     },
   },
+  /**
+   * 开发推荐使用
+   * cheap-module-source-map
+   */
+  devtool: "cheap-module-source-map",
   //  模式
   mode: "development", // 默认值是production
 };
