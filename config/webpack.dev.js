@@ -1,6 +1,7 @@
 const path = require("path");
 const EslintPlugin = require("eslint-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   //  入口
@@ -32,18 +33,18 @@ module.exports = {
          * css-loader: 将css资源编译成commonjs的模块插入到js中
          * style-loader: 将js中css通过创建style标签 添加到html文件中生效
          */
-        use: ["style-loader", "css-loader"],
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.less$/,
         //   loader: 'less-loader'  //  只能使用一个loader
         //    less-loader: 将less编译成css文件
-        use: ["style-loader", "css-loader", "less-loader"],
+        use: [MiniCssExtractPlugin.loader, "css-loader", "less-loader"],
       },
       {
         test: /\.s[ac]ss$/,
         //    sass-loader: 将less编译成css文件
-        use: ["style-loader", "css-loader", "sass-loader"],
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
       },
       {
         test: /\.(JPG|png|jpe?g|gif|webp|svg)$/,
@@ -76,6 +77,9 @@ module.exports = {
     new EslintPlugin({
       //  检测哪些文件
       context: path.resolve(__dirname, "../src"),
+    }),
+    new MiniCssExtractPlugin({
+      filename: "static/css/[name].css",
     }),
   ],
   //  开发服务器：不会输出资源，在内存中编译打包

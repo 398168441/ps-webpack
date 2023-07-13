@@ -1,6 +1,25 @@
 const path = require("path");
 const EslintPlugin = require("eslint-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+
+function getStyleLoader(pre) {
+  return [
+    MiniCssExtractPlugin.loader,
+    "css-loader",
+    {
+      loader: "postcss-loader",
+      options: {
+        postcssOptions: {
+          plugins: ["postcss-preset-env"], //这个预设能解决大部分兼容性问题
+        },
+      },
+    },
+    pre,
+  ].filter(Boolean);
+}
 
 module.exports = {
   //  入口
@@ -30,19 +49,20 @@ module.exports = {
          * use执行顺序从后往前
          * css-loader: 将css资源编译成commonjs的模块插入到js中
          * style-loader: 将js中css通过创建style标签 添加到html文件中生效
+         * post-css 处理兼容性问题
          */
-        use: ["style-loader", "css-loader"],
+        use: getStyleLoader(),
       },
       {
         test: /\.less$/,
         //   loader: 'less-loader'  //  只能使用一个loader
         //    less-loader: 将less编译成css文件
-        use: ["style-loader", "css-loader", "less-loader"],
+        use: getStyleLoader("less-loader"),
       },
       {
         test: /\.s[ac]ss$/,
         //    sass-loader: 将less编译成css文件
-        use: ["style-loader", "css-loader", "sass-loader"],
+        use: getStyleLoader("sass-loader"),
       },
       {
         test: /\.(JPG|png|jpe?g|gif|webp|svg)$/,
@@ -76,5 +96,21 @@ module.exports = {
       //  检测哪些文件
       context: path.resolve(__dirname, "../src"),
     }),
+    new MiniCssExtractPlugin({
+      filename: "static/css/[hash:10].css",
+    }),
   ],
+  optimization: {
+    /**
+     * 这样配置是代表你使用第三方plugin来压缩代码 所以要额外加上压缩js的plugin
+     * CssMinimizerPlugin压缩css
+     * TerserPlugin压缩js
+     */
+    minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
+  },
+  /**
+   * 模式
+   * 生成模式下默认开启html和js的压缩
+   */
+  mode: "production",
 };

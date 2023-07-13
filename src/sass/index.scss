@@ -6,6 +6,9 @@
   &:hover {
     background: deepskyblue;
   }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .box4 {
@@ -15,4 +18,7 @@
   &:hover {
     background: yellowgreen;
   }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

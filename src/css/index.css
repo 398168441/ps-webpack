@@ -3,4 +3,7 @@
   height: 100px;
   background: url("../images/1.JPG");
   background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
