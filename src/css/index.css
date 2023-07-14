@@ -1,6 +1,6 @@
 .box1 {
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   background: url("../images/1.JPG");
   background-size: cover;
   display: flex;

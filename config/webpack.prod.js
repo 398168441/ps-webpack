@@ -1,9 +1,13 @@
 const path = require("path");
+const os = require("os");
 const EslintPlugin = require("eslint-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
+
+const threads = os.cpus().length;
 
 function getStyleLoader(pre) {
   return [
@@ -36,54 +40,71 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /.js$/,
-        exclude: /node_modules/,
-        loader: "babel-loader",
-        /* options: {
-          presets: ["@babel/preset-env"],
-        }, */
-      },
-      {
-        test: /\.css$/,
-        /**
-         * use执行顺序从后往前
-         * css-loader: 将css资源编译成commonjs的模块插入到js中
-         * style-loader: 将js中css通过创建style标签 添加到html文件中生效
-         * post-css 处理兼容性问题
-         */
-        use: getStyleLoader(),
-      },
-      {
-        test: /\.less$/,
-        //   loader: 'less-loader'  //  只能使用一个loader
-        //    less-loader: 将less编译成css文件
-        use: getStyleLoader("less-loader"),
-      },
-      {
-        test: /\.s[ac]ss$/,
-        //    sass-loader: 将less编译成css文件
-        use: getStyleLoader("sass-loader"),
-      },
-      {
-        test: /\.(JPG|png|jpe?g|gif|webp|svg)$/,
-        type: "asset", // 默认把小于8kb资源转base64
-        parser: {
-          dataUrlCondition: {
-            // 小于10kb 转base64 优点：减少请求数量 缺点：体积会变大
-            maxSize: 10 * 1024, // 15kb
+        oneOf: [
+          {
+            test: /.js$/,
+            exclude: /node_modules/,
+            use: [
+              {
+                loader: "thread-loader",
+                options: {
+                  works: threads,
+                },
+              },
+              {
+                loader: "babel-loader",
+                options: {
+                  // presets: ["@babel/preset-env"],
+                  cacheDirectory: true,
+                  cacheCompression: false,
+                  plugins: ["@babel/plugin-transform-runtime"], // 减少打包体积
+                },
+              },
+            ],
           },
-        },
-        generator: {
-          filename: "static/images/[hash:10][ext][query]",
-        },
-      },
-      {
-        //  处理字体图标、音频、视频
-        test: /\.(ttf|woff2?|mp3|mp4|avi)$/,
-        type: "asset/resource", // 不会把资源转base64
-        generator: {
-          filename: "static/media/[hash:10][ext][query]",
-        },
+          {
+            test: /\.css$/,
+            /**
+             * use执行顺序从后往前
+             * css-loader: 将css资源编译成commonjs的模块插入到js中
+             * style-loader: 将js中css通过创建style标签 添加到html文件中生效
+             * post-css 处理兼容性问题
+             */
+            use: getStyleLoader(),
+          },
+          {
+            test: /\.less$/,
+            //   loader: 'less-loader'  //  只能使用一个loader
+            //    less-loader: 将less编译成css文件
+            use: getStyleLoader("less-loader"),
+          },
+          {
+            test: /\.s[ac]ss$/,
+            //    sass-loader: 将less编译成css文件
+            use: getStyleLoader("sass-loader"),
+          },
+          {
+            test: /\.(JPG|png|jpe?g|gif|webp|svg)$/,
+            type: "asset", // 默认把小于8kb资源转base64
+            parser: {
+              dataUrlCondition: {
+                // 小于10kb 转base64 优点：减少请求数量 缺点：体积会变大
+                maxSize: 10 * 1024, // 15kb
+              },
+            },
+            generator: {
+              filename: "static/images/[hash:10][ext][query]",
+            },
+          },
+          {
+            //  处理字体图标、音频、视频
+            test: /\.(ttf|woff2?|mp3|mp4|avi)$/,
+            type: "asset/resource", // 不会把资源转base64
+            generator: {
+              filename: "static/media/[hash:10][ext][query]",
+            },
+          },
+        ],
       },
     ],
   },
@@ -95,6 +116,13 @@ module.exports = {
     new EslintPlugin({
       //  检测哪些文件
       context: path.resolve(__dirname, "../src"),
+      exclude: "node_modules",
+      cache: true, //  默认应该开启了缓存
+      cacheLocation: path.resolve(
+        __dirname,
+        "../node_modules/.cache/eslintcache"
+      ),
+      threads,
     }),
     new MiniCssExtractPlugin({
       filename: "static/css/[hash:10].css",
@@ -106,7 +134,42 @@ module.exports = {
      * CssMinimizerPlugin压缩css
      * TerserPlugin压缩js
      */
-    minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
+    minimizer: [
+      //  压缩css
+      new CssMinimizerPlugin(),
+      //  压缩js
+      new TerserPlugin({
+        parallel: threads,
+      }),
+      //  压缩图片
+      new ImageMinimizerPlugin({
+        minimizer: {
+          implementation: ImageMinimizerPlugin.imageminGenerate,
+          options: {
+            plugins: [
+              ["gifsicle", { interlaced: true }],
+              ["jpegtran", { progressive: true }],
+              ["optipng", { optimizationLevel: 5 }],
+              [
+                "svgo",
+                {
+                  plugins: [
+                    "preset-default",
+                    "prefixIds",
+                    {
+                      name: "sortAttrs",
+                      params: {
+                        xmlnsOrder: "alphabetical",
+                      },
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+        },
+      }),
+    ],
   },
   /**
    * 开发推荐使用
