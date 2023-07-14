@@ -1,2 +1,2 @@
-!function(){"use strict";console.log(2-1),console.log(function(){for(var n=arguments.length,o=new Array(n),e=0;e<n;e++)o[e]=arguments[e];return o.reduce(((n,o)=>n+o),0)}(1,2,3,4,5))}();
+"use strict";(self.webpackChunkps_webpack=self.webpackChunkps_webpack||[]).push([[179],{669:function(){console.log(function(){for(var e=arguments.length,r=new Array(e),n=0;n<e;n++)r[n]=arguments[n];return r.reduce(((e,r)=>e+r),0)}(1,2,3,4,5)),"serviceWorker"in navigator&&window.addEventListener("load",(()=>{navigator.serviceWorker.register("/service-worker.js").then((e=>{console.log("SW registered: ",e)})).catch((e=>{console.log("SW registration failed: ",e)}))}))}},function(e){var r;r=669,e(e.s=r)}]);
 //# sourceMappingURL=main.js.map

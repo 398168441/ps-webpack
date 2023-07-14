@@ -16,7 +16,9 @@ module.exports = {
     //  开发环境输出在内存
     path: undefined,
     filename: "static/js/main.js",
-    // assetModuleFilename: "static/images/[hash:10][ext][query]",
+    chunkFilename: "static/js/[name].js",
+    //  图片、字体等 通过type:asset处理的资源的命名方式
+    assetModuleFilename: "static/asset/[hash:10][ext][query]",
     // clean: true,
   },
   //  加载器 这里叫【module】 别写成loader了
@@ -74,17 +76,17 @@ module.exports = {
                 maxSize: 10 * 1024, // 15kb
               },
             },
-            generator: {
+            /* generator: {
               filename: "static/images/[hash:10][ext][query]",
-            },
+            }, */
           },
           {
             //  处理字体图标、音频、视频
             test: /\.(ttf|woff2?|mp3|mp4|avi)$/,
             type: "asset/resource", // 不会把资源转base64
-            generator: {
+            /*  generator: {
               filename: "static/media/[hash:10][ext][query]",
-            },
+            }, */
           },
         ],
       },
